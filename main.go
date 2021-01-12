@@ -74,6 +74,16 @@ func InterpolateDeltas(stoplist []*Stop) ([]int, error) {
 
 	deltas := make([]int, numStops)
 
+	// Prefill zeros for all elements before the first timepoint
+	for i := 0; i < timepoints[0]; i++ {
+		deltas[i] = 0
+	}
+
+	// Prefill zeros for all elements after the first timepoint
+	for i := timepoints[len(timepoints)-1]; i < numStops; i++ {
+		deltas[i] = 0
+	}
+
 	// With two consecutive timepoint indexes, interpolate times for the stops between them. The
 	// values at the low and high timpoint indexes represent lower and upper indexes of the stops
 	// slice.
@@ -92,15 +102,6 @@ func InterpolateDeltas(stoplist []*Stop) ([]int, error) {
 		lowStopIdx := timepoints[lowTimepointIdx]
 		highStopIdx := timepoints[highTimepointIdx]
 		subset := stoplist[lowStopIdx : highStopIdx+1]
-
-		// If there are too few stops in the subset, we can't grab a delta. Set it to zero and move
-		// to the next subset.
-		if len(subset) == 1 {
-			deltas[lowStopIdx] = 0
-			lowTimepointIdx++
-			highTimepointIdx++
-			continue
-		}
 
 		// Grab the seconds difference between timepoints
 		lowTime := stoplist[lowStopIdx].StopTime
